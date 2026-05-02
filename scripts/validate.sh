@@ -128,12 +128,18 @@ check_file "CONTRIBUTING.md"
 check_file "SECURITY.md"
 check_file ".github/pull_request_template.md"
 check_file "scripts/validate.sh"
+check_file "fixtures/sample-history.json"
+check_file "src/cli.ts"
+check_file "src/vault.ts"
 
 printf '\nChecking pastevault required directories...\n'
 
 check_dir ".github"
 check_dir "docs"
 check_dir "scripts"
+check_dir "src"
+check_dir "tests"
+check_dir "fixtures"
 
 printf '\nRunning local project checks where present...\n'
 
@@ -141,7 +147,7 @@ if [ -f "package.json" ]; then
   if package_manager="$(choose_package_manager)"; then
     note "using package manager: $package_manager"
 
-    for script_name in check lint test build; do
+    for script_name in check test build smoke; do
       if package_script_exists "$script_name"; then
         run_check "package script: $script_name" run_package_script "$package_manager" "$script_name"
       fi
