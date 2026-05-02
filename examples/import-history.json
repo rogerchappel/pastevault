@@ -1,0 +1,8 @@
+[
+  "npm run check && npm test",
+  {
+    "text": "PR summary:\n- Added fixture import\n- Redacts secrets by default",
+    "tags": ["pr", "template"],
+    "pinned": true
+  }
+]

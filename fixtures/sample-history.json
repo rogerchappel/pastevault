@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "text": "git checkout -b feat/local-clipboard && npm test",
+      "tags": ["git", "workflow"],
+      "pinned": true,
+      "createdAt": "2026-04-28T09:00:00.000Z"
+    },
+    {
+      "text": "Deploy checklist:\n1. npm run build\n2. npm run smoke\n3. gh pr create --fill",
+      "tags": ["deploy", "checklist"],
+      "createdAt": "2026-04-28T09:05:00.000Z"
+    },
+    {
+      "text": "export API_KEY=super-secret-value-12345",
+      "tags": ["secret", "env"],
+      "createdAt": "2026-04-28T09:10:00.000Z"
+    },
+    {
+      "text": "Review note: keep clipboard history local-first and redact by default.",
+      "tags": ["review", "privacy"],
+      "createdAt": "2026-04-28T09:15:00.000Z"
+    }
+  ]
+}
