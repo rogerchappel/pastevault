@@ -51,7 +51,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
 
     switch (command) {
       case 'add': {
-        const text = args.includes('--stdin') ? await readStdin() : args.filter((arg) => !arg.startsWith('--')).join(' ');
+        const text = args.includes('--stdin') ? await readStdin() : positional(args).join(' ');
         const item = vault.add({ text, tags: options.tags, pinned: args.includes('--pin'), source: args.includes('--stdin') ? 'stdin' : 'manual' });
         await saveVault(options.store, vault.data);
         writeItem(item, options);
@@ -71,7 +71,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
         return 0;
       }
       case 'search': {
-        const query = args.filter((arg) => !arg.startsWith('--')).join(' ');
+        const query = positional(args).join(' ');
         if (!query) throw new Error('search requires a query');
         const items = vault.list({ query, limit: options.limit, includeSecrets: options.reveal, tags: options.tags });
         write(options.json ? renderJson({ query, items: items.map((item) => safeItem(item, options.reveal)) }) : renderList(items, options.reveal));
@@ -147,9 +147,23 @@ function parse(argv: string[]) {
 }
 
 function requiredArg(args: string[], message: string): string {
-  const value = args.find((arg) => !arg.startsWith('--'));
+  const value = positional(args)[0];
   if (!value) throw new Error(message);
   return value;
+}
+
+function positional(args: string[]): string[] {
+  const values: string[] = [];
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (['--store', '--limit', '--tag'].includes(arg)) {
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith('--')) continue;
+    values.push(arg);
+  }
+  return values;
 }
 
 async function readStdin(): Promise<string> {

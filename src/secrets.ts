@@ -64,8 +64,12 @@ function mergeFindings(findings: SecretFinding[]): SecretFinding[] {
   for (const finding of sorted) {
     const previous = merged.at(-1);
     if (previous && finding.start < previous.end) {
-      if (finding.end > previous.end) previous.end = finding.end;
-      previous.confidence = previous.confidence === 'high' || finding.confidence === 'high' ? 'high' : previous.confidence;
+      if (previous.confidence !== 'high' && finding.confidence === 'high') {
+        merged[merged.length - 1] = { ...finding };
+      } else {
+        if (finding.end > previous.end) previous.end = finding.end;
+        previous.confidence = previous.confidence === 'high' || finding.confidence === 'high' ? 'high' : previous.confidence;
+      }
       continue;
     }
     merged.push({ ...finding });
