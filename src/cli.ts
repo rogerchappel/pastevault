@@ -31,6 +31,7 @@ Usage:
   pastevault secrets [--json]
   pastevault redact <text>
   pastevault stats [--json]
+  pastevault export [--json] [--reveal]
 
 Privacy defaults:
   Text is stored only in a local JSON file. Secret-looking content is redacted in output
@@ -109,6 +110,11 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       case 'stats': {
         const stats = vault.stats();
         write(options.json ? renderJson(stats) : `items: ${stats.items}\npinned: ${stats.pinned}\nwith secrets: ${stats.withSecrets}\ntags: ${stats.tags.join(', ') || '-'}\n`);
+        return 0;
+      }
+      case 'export': {
+        const items = vault.data.items.map((item) => safeItem(item, options.reveal));
+        write(renderJson({ version: vault.data.version, exportedAt: new Date().toISOString(), items }));
         return 0;
       }
       case 'capture-file': {
