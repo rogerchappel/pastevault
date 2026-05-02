@@ -1,13 +1,8 @@
-# pastevault Documentation
+# pastevault docs
 
-This directory holds project documentation.
-
-## Contents
-
-- [Contributing guide](../CONTRIBUTING.md)
-- [Security policy](../SECURITY.md)
-- [Agent instructions](../AGENTS.md)
-
-## Additional docs
-
-For a hosted documentation site, see the `docs-site/` directory if present.
+- [PRD](./PRD.md) - product scope and scorecard
+- [Tasks](./TASKS.md) - implementation waves
+- [Usage](./USAGE.md) - CLI workflows and fixture format
+- [Safety](./SAFETY.md) - privacy and redaction model
+- [Format](./FORMAT.md) - local JSON vault structure
+- [Orchestration](./ORCHESTRATION.md) - build/publish requirements for this scaffold
