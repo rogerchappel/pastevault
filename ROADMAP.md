@@ -1,38 +1,27 @@
 # Roadmap
 
-This roadmap describes intended direction, not a binding delivery promise.
-Review it regularly and update it as the project learns from users,
-contributors, and implementation constraints.
+## 0.1 MVP
 
-## Now
-
-- Define the smallest useful project scope.
-- Keep repository setup, documentation, and verification easy for contributors
-  to follow.
-- Ship small, reviewable improvements.
+- Local JSON vault
+- Fixture/import workflows
+- Search, list, show, pin, remove
+- Secret detection and redaction by default
+- Palette-style terminal listing
+- JSON output for automation
 
 ## Next
 
-- Add the next capabilities that directly support the project's primary users.
-- Improve tests, docs, and examples around the most used workflows.
-- Reduce setup friction discovered during early use.
+- Optional macOS clipboard watcher with explicit install instructions
+- Fuzzy ranking and recency scoring
+- Interactive TUI palette
+- Configurable retention limits
+- Vault migrations and export command
+- Additional detector fixtures
 
-## Later
+## Deliberately out of scope
 
-- Consider larger features after the core workflow is stable.
-- Add automation only where it removes repeated maintainer work.
-- Revisit packaging, deployment, or integration options based on real demand.
-
-## Not Planned
-
-- Unrelated platform rewrites without a clear migration path.
-- Mandatory dependencies on a single ecosystem unless the project requires it.
-- Public release dates before maintainers are ready to commit to them.
-
-## Roadmap Review
-
-Before each major or meaningful minor release:
-
-- Move completed user-visible work into `CHANGELOG.md`.
-- Remove stale commitments.
-- Promote only the next reviewable set of work into `Now`.
+- Cloud sync
+- Credential management claims
+- Capturing files/images
+- Hidden background services
+- Automatic paste injection without explicit user action
