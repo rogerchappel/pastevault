@@ -32,6 +32,9 @@ test('cli imports fixtures, searches and redacts by default', async () => {
     assert.doesNotMatch(search.out, /super-secret/);
     const json = await capture(() => main(['list', '--json', '--store', store]));
     assert.equal(JSON.parse(json.out).items.length, 4);
+    const exported = await capture(() => main(['export', '--store', store]));
+    assert.equal(JSON.parse(exported.out).items.length, 4);
+    assert.doesNotMatch(exported.out, /super-secret/);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
