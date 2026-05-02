@@ -34,3 +34,7 @@ pastevault search "release note" --json | jq '.items[].id'
 ## Quick paste palette
 
 `pastevault palette` prints a compact numbered list with ids and secret indicators. The CLI does not inject keystrokes or paste into other apps; copy the snippet yourself after `show --reveal` if needed.
+
+## Exporting
+
+`pastevault export` emits a JSON bundle suitable for backups, bug reports, or migration tests. It redacts by default just like other commands; use `--reveal` only for trusted local backups.

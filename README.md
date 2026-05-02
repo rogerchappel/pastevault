@@ -67,6 +67,7 @@ Detected patterns include GitHub tokens, Slack tokens, AWS access key IDs, priva
 | `rm` | Remove one snippet. |
 | `secrets` | Audit snippets with secret findings, redacted. |
 | `stats` | Print count, pins, secret count, and tags. |
+| `export` | Emit a redacted JSON export unless `--reveal` is used. |
 | `redact <text>` | Redact text without storing it. |
 | `capture-file <path>` | Add a text file as a clipboard-like capture. |
 
