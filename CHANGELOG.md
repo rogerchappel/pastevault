@@ -1,21 +1,14 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to pastevault will be documented here.
 
-This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
-format and uses semantic versioning when versioned releases are published.
-
-## [Unreleased]
+## 0.1.0 - 2026-05-02
 
 ### Added
 
-- Initial project setup.
-
-## Release Links
-
-- Unreleased:
-  `https://github.com/rogerchappel/pastevault/compare/...HEAD`
-- Latest release:
-  `https://github.com/rogerchappel/pastevault/releases/latest`
-
-Replace placeholder links once the first release tag exists.
+- Local-first JSON vault with atomic writes.
+- TypeScript CLI and public library API.
+- Add, import, list, search, show, pin, unpin, remove, stats, secrets, redact, palette, and capture-file commands.
+- Secret detection for common developer token patterns with redaction by default.
+- Fixture-backed tests, smoke script, and validation script.
+- README, usage, safety, and file-format documentation.
