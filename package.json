@@ -26,7 +26,9 @@
     "check": "tsc --noEmit",
     "build": "tsc -p tsconfig.json && node scripts/fix-bin-mode.mjs",
     "test": "node --test --import tsx tests/*.test.ts",
-    "smoke": "npm run build && bash scripts/smoke.sh"
+    "smoke": "npm run build && bash scripts/smoke.sh",
+    "release:check": "npm run check && npm test && npm run build && npm run smoke && bash scripts/validate.sh && npm pack --dry-run",
+    "release:notes": "node /tmp/releasebox/bin/releasebox.js notes ."
   },
   "keywords": [
     "clipboard",
