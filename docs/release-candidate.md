@@ -1,12 +1,14 @@
 # Release candidate readiness
 
-Generated: 2026-05-05T21:28:49Z
-Branch: `release-candidate/readiness`
+Generated: 2026-05-05T21:32:04Z
+Branch: `rc/release-readiness`
 Base: `main`
 
 ## Verification
 
 Status: PASS
+
+Note: this follow-up PR keeps an open release-readiness review after the earlier `release-candidate/readiness` PR was merged.
 
 Checks run:
 - `npm ci`
@@ -31,17 +33,17 @@ Checks run:
     > pastevault@0.1.0 test
     > node --test --import tsx tests/*.test.ts
     
-    ✔ cli imports fixtures, searches and redacts by default (13.285333ms)
-    ✔ parses import arrays and object wrappers (1.171958ms)
-    ✔ renders terminal list and palette rows (3.187917ms)
-    ✔ detects github tokens and redacts values (0.882959ms)
-    ✔ detects generic assignments (0.176625ms)
-    ✔ leaves ordinary snippets alone (0.600125ms)
-    ✔ uses XDG data home when supplied (1.02175ms)
-    ✔ round-trips vault json with private file path (11.595542ms)
-    ✔ adds, deduplicates and merges tags (2.529916ms)
-    ✔ searches text, notes and tags (0.377209ms)
-    ✔ safe items redact by default (0.169416ms)
+    ✔ cli imports fixtures, searches and redacts by default (21.750917ms)
+    ✔ parses import arrays and object wrappers (0.775417ms)
+    ✔ renders terminal list and palette rows (4.252375ms)
+    ✔ detects github tokens and redacts values (1.594458ms)
+    ✔ detects generic assignments (0.418667ms)
+    ✔ leaves ordinary snippets alone (0.717583ms)
+    ✔ uses XDG data home when supplied (1.432792ms)
+    ✔ round-trips vault json with private file path (15.185208ms)
+    ✔ adds, deduplicates and merges tags (3.900084ms)
+    ✔ searches text, notes and tags (1.199167ms)
+    ✔ safe items redact by default (0.93875ms)
     ℹ tests 11
     ℹ suites 0
     ℹ pass 11
@@ -49,7 +51,7 @@ Checks run:
     ℹ cancelled 0
     ℹ skipped 0
     ℹ todo 0
-    ℹ duration_ms 251.886208
+    ℹ duration_ms 267.115084
     
     > pastevault@0.1.0 build
     > tsc -p tsconfig.json && node scripts/fix-bin-mode.mjs
@@ -93,17 +95,17 @@ Checks run:
     > pastevault@0.1.0 test
     > node --test --import tsx tests/*.test.ts
     
-    ✔ cli imports fixtures, searches and redacts by default (14.654167ms)
-    ✔ parses import arrays and object wrappers (0.482833ms)
-    ✔ renders terminal list and palette rows (1.387542ms)
-    ✔ detects github tokens and redacts values (1.795375ms)
-    ✔ detects generic assignments (0.438875ms)
-    ✔ leaves ordinary snippets alone (0.656667ms)
-    ✔ uses XDG data home when supplied (0.499625ms)
-    ✔ round-trips vault json with private file path (10.229958ms)
-    ✔ adds, deduplicates and merges tags (2.282292ms)
-    ✔ searches text, notes and tags (0.371958ms)
-    ✔ safe items redact by default (0.172083ms)
+    ✔ cli imports fixtures, searches and redacts by default (14.310333ms)
+    ✔ parses import arrays and object wrappers (1.388167ms)
+    ✔ renders terminal list and palette rows (2.71575ms)
+    ✔ detects github tokens and redacts values (1.223084ms)
+    ✔ detects generic assignments (0.557458ms)
+    ✔ leaves ordinary snippets alone (0.793291ms)
+    ✔ uses XDG data home when supplied (0.53875ms)
+    ✔ round-trips vault json with private file path (17.6075ms)
+    ✔ adds, deduplicates and merges tags (2.539583ms)
+    ✔ searches text, notes and tags (0.416792ms)
+    ✔ safe items redact by default (0.17875ms)
     ℹ tests 11
     ℹ suites 0
     ℹ pass 11
@@ -111,7 +113,7 @@ Checks run:
     ℹ cancelled 0
     ℹ skipped 0
     ℹ todo 0
-    ℹ duration_ms 181.986084
+    ℹ duration_ms 463.563125
     PASS: package script: test
     
     > pastevault@0.1.0 build
@@ -180,7 +182,7 @@ Checks run:
     npm notice
     pastevault-0.1.0.tgz
     ```
-    RESULT: 0 (6s)
+    RESULT: 0
     
     ## bash scripts/validate.sh
     ```
@@ -217,17 +219,17 @@ Checks run:
     > pastevault@0.1.0 test
     > node --test --import tsx tests/*.test.ts
     
-    ✔ cli imports fixtures, searches and redacts by default (22.765583ms)
-    ✔ parses import arrays and object wrappers (0.5155ms)
-    ✔ renders terminal list and palette rows (3.148458ms)
-    ✔ detects github tokens and redacts values (1.852958ms)
-    ✔ detects generic assignments (0.253709ms)
-    ✔ leaves ordinary snippets alone (5.507791ms)
-    ✔ uses XDG data home when supplied (3.086667ms)
-    ✔ round-trips vault json with private file path (15.518ms)
-    ✔ adds, deduplicates and merges tags (4.817625ms)
-    ✔ searches text, notes and tags (0.926792ms)
-    ✔ safe items redact by default (0.229292ms)
+    ✔ cli imports fixtures, searches and redacts by default (16.862417ms)
+    ✔ parses import arrays and object wrappers (0.526417ms)
+    ✔ renders terminal list and palette rows (2.348291ms)
+    ✔ detects github tokens and redacts values (1.120042ms)
+    ✔ detects generic assignments (0.298458ms)
+    ✔ leaves ordinary snippets alone (1.6955ms)
+    ✔ uses XDG data home when supplied (0.548417ms)
+    ✔ round-trips vault json with private file path (8.279583ms)
+    ✔ adds, deduplicates and merges tags (2.726166ms)
+    ✔ searches text, notes and tags (0.3725ms)
+    ✔ safe items redact by default (0.167375ms)
     ℹ tests 11
     ℹ suites 0
     ℹ pass 11
@@ -235,7 +237,7 @@ Checks run:
     ℹ cancelled 0
     ℹ skipped 0
     ℹ todo 0
-    ℹ duration_ms 274.00475
+    ℹ duration_ms 246.659208
     PASS: package script: test
     
     > pastevault@0.1.0 build
@@ -256,7 +258,7 @@ Checks run:
     
     Validation passed.
     ```
-    RESULT: 0 (4s)
+    RESULT: 0
     
     ## ReleaseBox check
     ```
@@ -274,5 +276,5 @@ Checks run:
     ✅ smoke script: npm run build && bash scripts/smoke.sh
     ✅ bin entry: {"pastevault":"./dist/cli.js","pv":"./dist/cli.js"}
     ```
-    RESULT: 0 (0s)
+    RESULT: 0
     
