@@ -20,7 +20,8 @@
     "fixtures",
     "README.md",
     "SECURITY.md",
-    "ROADMAP.md"
+    "ROADMAP.md",
+    "LICENSE"
   ],
   "scripts": {
     "check": "tsc --noEmit",

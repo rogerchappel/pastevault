@@ -103,3 +103,13 @@ node dist/cli.js search deploy --store "$tmp/vault.json"
 ## What pastevault is not
 
 It is not a password manager, secret vault, or cross-device sync product. If you paste real credentials into it, treat the local vault file with the same care as any other sensitive developer artifact.
+
+## Verification
+
+Run these checks before opening a PR or publishing a release:
+
+```bash
+npm test
+npm run smoke
+npm run release:check
+```
