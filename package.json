@@ -30,8 +30,8 @@
     "build": "tsc -p tsconfig.json && node scripts/fix-bin-mode.mjs",
     "test": "node --test --import tsx tests/*.test.ts",
     "smoke": "npm run build && bash scripts/smoke.sh",
-    "package:smoke": "npm pack --dry-run",
-    "release:check": "npm run check && npm test && npm run build && npm run smoke && bash scripts/validate.sh && npm run package:smoke",
+    "package:smoke": "npm run build && npm pack --dry-run",
+    "release:check": "npm run check && npm test && npm run smoke && bash scripts/validate.sh && npm run package:smoke",
     "release:notes": "node /tmp/releasebox/bin/releasebox.js notes ."
   },
   "keywords": [

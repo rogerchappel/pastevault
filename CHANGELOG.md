@@ -18,3 +18,7 @@ All notable changes to pastevault will be documented here.
 - Secret detection for common developer token patterns with redaction by default.
 - Fixture-backed tests, smoke script, and validation script.
 - README, usage, safety, and file-format documentation.
+
+### Changed
+
+- Added a named package smoke command and wired the release check through it.
