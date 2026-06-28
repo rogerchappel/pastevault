@@ -17,6 +17,10 @@
   },
   "files": [
     "dist",
+    "docs/FORMAT.md",
+    "docs/SAFETY.md",
+    "docs/USAGE.md",
+    "examples",
     "fixtures",
     "README.md",
     "SECURITY.md",
