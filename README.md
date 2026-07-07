@@ -117,3 +117,7 @@ npm run release:check
 ```
 
 `npm run package:smoke` builds the CLI, creates a dry-run npm tarball, verifies the runtime, fixtures, examples, docs, license, changelog, contribution, and security files are present, then runs the packed CLI help command.
+
+## Limitations
+
+pastevault is a local-first helper for preparing reviewable evidence. It does not replace human review, live system validation, or project-specific policy checks, and generated output should be inspected before use in release or operational decisions.
