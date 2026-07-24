@@ -15,8 +15,14 @@ env:
 
 jobs:
   test:
-    name: Test and validate
-    runs-on: ubuntu-latest
+    name: Test and validate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
 
     steps:
       - name: Check out repository
