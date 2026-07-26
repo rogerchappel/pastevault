@@ -1,6 +1,8 @@
 #!/usr/bin/env node
+import { realpathSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { stdin as input, stdout, stderr } from 'node:process';
+import { fileURLToPath } from 'node:url';
 import { defaultStorePath, loadVault, saveVault } from './storage.js';
 import { PasteVault, safeItem } from './vault.js';
 import { readImportFile } from './fixtures.js';
@@ -192,6 +194,15 @@ function write(text: string): void {
   stdout.write(text);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+export function isDirectExecution(moduleUrl: string, argvPath: string | undefined): boolean {
+  if (!argvPath) return false;
+  try {
+    return realpathSync(fileURLToPath(moduleUrl)) === realpathSync(argvPath);
+  } catch {
+    return false;
+  }
+}
+
+if (isDirectExecution(import.meta.url, process.argv[1])) {
   process.exitCode = await main();
 }
