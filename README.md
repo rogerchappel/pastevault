@@ -116,7 +116,7 @@ npm run package:smoke
 npm run release:check
 ```
 
-`npm run package:smoke` builds the CLI, creates a dry-run npm tarball, verifies the runtime, fixtures, examples, docs, license, changelog, contribution, and security files are present, then runs the packed CLI help command.
+`npm run package:smoke` builds the CLI, creates a dry-run npm tarball, verifies the runtime, fixtures, examples, docs, license, changelog, contribution, and security files are present, then runs the packed CLI help command through direct and filesystem-aliased paths. The alias check covers canonical path differences such as macOS `/var` and `/private/var`.
 
 ## Limitations
 

@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -31,9 +31,15 @@ try {
     }
   }
 
-  const help = execFileSync('node', [join(dir, 'package/dist/cli.js'), '--help'], { encoding: 'utf8' });
-  if (!help.includes('pastevault add')) {
-    throw new Error('packed CLI help did not include expected usage text');
+  const cli = join(dir, 'package/dist/cli.js');
+  const aliases = join(dir, 'aliases');
+  symlinkSync(join(dir, 'package'), aliases, 'dir');
+
+  for (const path of [cli, join(aliases, 'dist/cli.js')]) {
+    const help = execFileSync('node', [path, '--help'], { encoding: 'utf8' });
+    if (!help.includes('pastevault add')) {
+      throw new Error(`packed CLI help did not include expected usage text via ${path}`);
+    }
   }
 
   console.log(`package smoke passed for ${tarball}`);
