@@ -72,6 +72,8 @@ Detected patterns include GitHub tokens, Slack tokens, AWS access key IDs, priva
 | `capture-file <path>` | Add a text file as a clipboard-like capture. |
 
 Global options include `--store <path>`, `--json`, `--limit <n>`, `--tag <name>`, `--pinned`, and `--reveal`.
+Options that take a value reject missing values, and unknown options are errors. Commands that accept an
+`<id>` allow an exact ID or a uniquely identifying prefix; ambiguous prefixes are rejected without changes.
 
 ## Local-first guarantees
 

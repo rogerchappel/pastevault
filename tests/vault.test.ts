@@ -28,3 +28,21 @@ test('safe items redact by default', () => {
   assert.match(safeItem(item).text, /redacted/);
   assert.equal(safeItem(item, true).text, item.text);
 });
+
+test('exact and unique-prefix ids resolve while ambiguous prefixes are rejected', () => {
+  const file = emptyVault();
+  const first = { ...new PasteVault(file).add({ text: 'first' }), id: 'abc111' };
+  const second = { ...new PasteVault(file).add({ text: 'second' }), id: 'abc222' };
+  file.items = [first, second];
+  const vault = new PasteVault(file);
+
+  assert.equal(vault.get('abc111'), first);
+  assert.equal(vault.get('abc1'), first);
+  assert.throws(() => vault.get('abc'), /ambiguous snippet id: abc/);
+
+  const before = structuredClone(vault.data.items);
+  assert.throws(() => vault.pin('abc'), /ambiguous snippet id: abc/);
+  assert.deepEqual(vault.data.items, before);
+  assert.throws(() => vault.remove('abc'), /ambiguous snippet id: abc/);
+  assert.deepEqual(vault.data.items, before);
+});

@@ -141,17 +141,25 @@ function parse(argv: string[]) {
   const command = argv[0];
   const args = argv.slice(1);
   const options: CliOptions = { store: defaultStorePath(), json: false, reveal: false, tags: [] };
-  for (let index = 0; index < argv.length; index += 1) {
+  for (let index = 1; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (arg === '--store') options.store = argv[++index];
+    if (arg === '--store') options.store = optionValue(argv, ++index, '--store');
     else if (arg === '--json') options.json = true;
     else if (arg === '--reveal') options.reveal = true;
-    else if (arg === '--limit') options.limit = Number(argv[++index]);
-    else if (arg === '--tag') options.tags.push(argv[++index]);
+    else if (arg === '--limit') options.limit = Number(optionValue(argv, ++index, '--limit'));
+    else if (arg === '--tag') options.tags.push(optionValue(argv, ++index, '--tag'));
     else if (arg === '--pinned') options.pinned = true;
+    else if (arg === '--pin' || arg === '--stdin') continue;
+    else if (arg.startsWith('-')) throw new Error(`unknown option: ${arg}`);
   }
   if (options.limit !== undefined && (!Number.isInteger(options.limit) || options.limit < 1)) throw new Error('--limit must be a positive integer');
   return { command, args, options };
+}
+
+function optionValue(argv: string[], index: number, option: string): string {
+  const value = argv[index];
+  if (!value || value.startsWith('-')) throw new Error(`${option} requires a value`);
+  return value;
 }
 
 function requiredArg(args: string[], message: string): string {
