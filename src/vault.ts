@@ -54,9 +54,7 @@ export class PasteVault {
   }
 
   get(id: string): PasteItem {
-    const item = this.vault.items.find((candidate) => candidate.id === id || candidate.id.startsWith(id));
-    if (!item) throw new Error(`snippet not found: ${id}`);
-    return item;
+    return this.resolve(id);
   }
 
   pin(id: string, pinned = true): PasteItem {
@@ -67,10 +65,19 @@ export class PasteVault {
   }
 
   remove(id: string): PasteItem {
-    const index = this.vault.items.findIndex((candidate) => candidate.id === id || candidate.id.startsWith(id));
-    if (index < 0) throw new Error(`snippet not found: ${id}`);
+    const item = this.resolve(id);
+    const index = this.vault.items.indexOf(item);
     const [removed] = this.vault.items.splice(index, 1);
     return removed;
+  }
+
+  private resolve(id: string): PasteItem {
+    const exact = this.vault.items.find((candidate) => candidate.id === id);
+    if (exact) return exact;
+    const matches = this.vault.items.filter((candidate) => candidate.id.startsWith(id));
+    if (matches.length === 0) throw new Error(`snippet not found: ${id}`);
+    if (matches.length > 1) throw new Error(`ambiguous snippet id: ${id}`);
+    return matches[0];
   }
 
   stats() {
