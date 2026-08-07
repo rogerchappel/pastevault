@@ -2,22 +2,37 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*.*.*'
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to publish or repair
+        required: true
+        type: string
 
-permissions:
-  contents: write
+permissions: {}
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   release:
+    permissions:
+      contents: write
+      id-token: write
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Resolve release tag
+        id: tag
+        env:
+          PUSH_TAG: ${{ github.ref_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: echo "tag=${INPUT_TAG:-$PUSH_TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Check out exact tagged source
         uses: actions/checkout@v5
         with:
+          ref: ${{ steps.tag.outputs.tag }}
           fetch-depth: 0
 
       - name: Set up Node.js
@@ -25,6 +40,10 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Verify tag and package version
+        run: npm run release:guard -- check-tag "${{ steps.tag.outputs.tag }}"
 
       - name: Install dependencies
         run: npm ci
@@ -41,13 +60,36 @@ jobs:
       - name: Run release check
         run: npm run release:check
 
-      - name: Pack npm artifact
-        run: npm pack
+      - name: Pack exact artifact
+        id: pack
+        run: echo "tarball=$(npm pack --json | node -e \"let s='';process.stdin.on('data',d=>s+=d).on('end',()=>process.stdout.write(JSON.parse(s)[0].filename))\")" >> "$GITHUB_OUTPUT"
+
+      - name: Check registry
+        id: registry
+        run: npm run release:guard -- published
+
+      - name: Publish to npm with provenance
+        if: steps.registry.outputs.published != 'true'
+        run: npm publish "${{ steps.pack.outputs.tarball }}" --access public --provenance
+
+      - name: Verify registry artifact
+        run: npm run release:guard -- verify-registry "${{ steps.pack.outputs.tarball }}"
+
+      - name: Verify packed CLI
+        run: node scripts/package-smoke.mjs "${{ steps.pack.outputs.tarball }}"
 
       - name: Generate release notes
         run: node /tmp/releasebox/bin/releasebox.js notes . > RELEASE_NOTES.md
 
-      - name: Create GitHub release
+      - name: Create or repair GitHub release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "${GITHUB_REF_NAME}" --notes-file RELEASE_NOTES.md *.tgz
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --notes-file RELEASE_NOTES.md
+            gh release upload "$TAG" "$TARBALL" --clobber
+          else
+            gh release create "$TAG" --verify-tag --notes-file RELEASE_NOTES.md "$TARBALL"
+          fi

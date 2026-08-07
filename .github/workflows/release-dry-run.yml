@@ -7,6 +7,10 @@ on:
       - releasebox.config.json
       - package.json
       - package-lock.json
+      - scripts/package-smoke.mjs
+      - scripts/release-guard.mjs
+      - tests/release-guard.test.ts
+      - README.md
       - .github/workflows/release*.yml
 
 permissions:
@@ -44,6 +48,11 @@ jobs:
 
       - name: Run release check
         run: npm run release:check
+
+      - name: Exercise release guards
+        run: |
+          npm run release:guard -- check-tag "v$(node -p \"require('./package.json').version\")"
+          ! npm run release:guard -- check-tag v0.0.0
 
       - name: Generate release notes preview
         run: node /tmp/releasebox/bin/releasebox.js notes . > release-notes-preview.md

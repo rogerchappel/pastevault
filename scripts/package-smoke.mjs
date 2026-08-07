@@ -20,7 +20,8 @@ const required = [
 const dir = mkdtempSync(join(tmpdir(), 'pastevault-pack-'));
 
 try {
-  const tarball = execFileSync('npm', ['pack', '--silent'], { encoding: 'utf8' }).trim();
+  const suppliedTarball = process.argv[2];
+  const tarball = suppliedTarball ?? execFileSync('npm', ['pack', '--silent'], { encoding: 'utf8' }).trim();
   execFileSync('tar', ['-xzf', tarball, '-C', dir]);
   const contents = execFileSync('find', [join(dir, 'package'), '-type', 'f'], { encoding: 'utf8' });
 
@@ -43,7 +44,7 @@ try {
   }
 
   console.log(`package smoke passed for ${tarball}`);
-  rmSync(tarball, { force: true });
+  if (!suppliedTarball) rmSync(tarball, { force: true });
 } finally {
   rmSync(dir, { recursive: true, force: true });
 }
