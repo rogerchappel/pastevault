@@ -118,6 +118,18 @@ npm run package:smoke
 npm run release:check
 ```
 
+Before creating a release tag, update `package.json` and `package-lock.json`, then verify the exact tag/version pair:
+
+```bash
+npm ci
+npm run release:check
+npm run release:guard -- check-tag "v$(node -p \"require('./package.json').version\")"
+git tag "v$(node -p \"require('./package.json').version\")"
+git push origin "v$(node -p \"require('./package.json').version\")"
+```
+
+If npm publication or GitHub release creation failed after the tag was pushed, run the **Release** workflow manually with that existing tag. The workflow checks out the tagged commit, skips an exact version already present on npm, verifies registry integrity and the packed CLI, and creates or repairs the matching GitHub release without moving the tag.
+
 `npm run package:smoke` builds the CLI, creates a dry-run npm tarball, verifies the runtime, fixtures, examples, docs, license, changelog, contribution, and security files are present, then runs the packed CLI help command through direct and filesystem-aliased paths. The alias check covers canonical path differences such as macOS `/var` and `/private/var`.
 
 ## Limitations
