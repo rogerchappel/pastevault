@@ -24,7 +24,7 @@ const help = `pastevault — local-first clipboard/snippet vault
 Usage:
   pastevault add <text> [--tag name] [--pin] [--store path]
   pastevault add --stdin [--tag name]
-  pastevault import <file.json> [--store path]
+  pastevault import <file.json> [--store path] [--tag name]
   pastevault list [--limit n] [--tag name] [--pinned] [--json] [--reveal]
   pastevault search <query> [--json] [--reveal]
   pastevault show <id> [--json] [--reveal]
@@ -61,9 +61,12 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
         return 0;
       }
       case 'import': {
-        const file = args.find((arg) => !arg.startsWith('--'));
-        if (!file) throw new Error('import requires a JSON file path');
-        const items = vault.importItems(await readImportFile(file));
+        const [file] = exactPositionals(args, 1, 'usage: pastevault import <file.json> [options]');
+        const inputs = await readImportFile(file);
+        const items = vault.importItems(inputs.map((item) => ({
+          ...item,
+          tags: [...(item.tags ?? []), ...options.tags]
+        })));
         await saveVault(options.store, vault.data);
         write(options.json ? renderJson({ imported: items.length, items: items.map((item) => safeItem(item, options.reveal)) }) : `Imported ${items.length} snippets.\n`);
         return 0;
@@ -166,6 +169,12 @@ function requiredArg(args: string[], message: string): string {
   const value = positional(args)[0];
   if (!value) throw new Error(message);
   return value;
+}
+
+function exactPositionals(args: string[], count: number, message: string): string[] {
+  const values = positional(args);
+  if (values.length !== count) throw new Error(message);
+  return values;
 }
 
 function positional(args: string[]): string[] {
