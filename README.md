@@ -25,6 +25,8 @@ node dist/cli.js --help
 ```bash
 # Import deterministic fixture history
 pastevault import fixtures/sample-history.json --store ./.pastevault/vault.json
+# Value-taking options may also precede the import source
+pastevault import --store ./.pastevault/tagged.json --tag migrated fixtures/sample-history.json
 
 # Add snippets manually
 pastevault add "npm run check && npm test" --tag ci --pin
@@ -74,6 +76,8 @@ Detected patterns include GitHub tokens, Slack tokens, AWS access key IDs, priva
 Global options include `--store <path>`, `--json`, `--limit <n>`, `--tag <name>`, `--pinned`, and `--reveal`.
 Options that take a value reject missing values, and unknown options are errors. Commands that accept an
 `<id>` allow an exact ID or a uniquely identifying prefix; ambiguous prefixes are rejected without changes.
+Import accepts global options before or after its single `<file.json>` argument. An import-level `--tag`
+is added to every imported item while preserving tags supplied by the file.
 
 ## Local-first guarantees
 

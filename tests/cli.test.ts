@@ -1,11 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { main } from '../src/cli.ts';
 import { emptyVault } from '../src/storage.ts';
 import { PasteVault } from '../src/vault.ts';
+
+const execFileAsync = promisify(execFile);
 
 async function capture(run: () => Promise<number>) {
   let out = '';
@@ -39,6 +43,40 @@ test('cli imports fixtures, searches and redacts by default', async () => {
     assert.doesNotMatch(exported.out, /super-secret/);
   } finally {
     await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('main cli import accepts global value options before or after its source', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'pastevault-cli-import-order-'));
+  try {
+    const source = 'fixtures/sample-history.json';
+    const optionFirstStore = join(dir, 'option-first.json');
+    const fileFirstStore = join(dir, 'file-first.json');
+
+    const optionFirst = await execFileAsync(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'import', '--store', optionFirstStore, '--tag', 'migrated', source, '--json']);
+    assert.equal(JSON.parse(optionFirst.stdout).imported, 4);
+
+    const fileFirst = await execFileAsync(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'import', source, '--tag', 'migrated', '--store', fileFirstStore, '--json']);
+    assert.equal(JSON.parse(fileFirst.stdout).imported, 4);
+
+    for (const store of [optionFirstStore, fileFirstStore]) {
+      const vault = JSON.parse(await readFile(store, 'utf8'));
+      assert.equal(vault.items.length, 4);
+      assert.ok(vault.items.every((item: { tags: string[] }) => item.tags.includes('migrated')));
+    }
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli import requires exactly one source path', async () => {
+  for (const argv of [
+    ['import', '--store', 'vault.json'],
+    ['import', 'one.json', 'two.json', '--store', 'vault.json']
+  ]) {
+    const result = await capture(() => main(argv));
+    assert.equal(result.code, 1, argv.join(' '));
+    assert.equal(result.err, 'pastevault: usage: pastevault import <file.json> [options]\n');
   }
 });
 
