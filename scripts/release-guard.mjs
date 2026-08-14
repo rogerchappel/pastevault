@@ -35,6 +35,28 @@ function npmView(spec, field) {
   }
 }
 
+function normalizeRepositoryUrl(value) {
+  return String(value ?? '')
+    .replace(/^git\+/, '')
+    .replace(/^git@github\.com:/, 'https://github.com/')
+    .replace(/\.git$/, '')
+    .replace(/\/$/, '')
+    .toLowerCase();
+}
+
+export function assertRegistryIdentity(metadata, packageJson) {
+  if (!metadata) return 'available';
+  if (metadata.name !== packageJson.name) {
+    throw new Error(`registry returned package ${metadata.name ?? '<unknown>'}, expected ${packageJson.name}`);
+  }
+  const expected = normalizeRepositoryUrl(packageJson.repository?.url);
+  const actual = normalizeRepositoryUrl(metadata.repository?.url ?? metadata['repository.url']);
+  if (!actual || actual !== expected) {
+    throw new Error(`refusing publication: ${packageJson.name} belongs to ${actual || '<no repository>'}, expected ${expected}`);
+  }
+  return 'owned';
+}
+
 async function main([command, ...args]) {
   const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
   if (command === 'check-tag') {
@@ -51,6 +73,12 @@ async function main([command, ...args]) {
     }
     return;
   }
+  if (command === 'check-registry-identity') {
+    const output = npmView(packageJson.name, 'name repository.url');
+    const status = assertRegistryIdentity(output ? JSON.parse(output) : null, packageJson);
+    console.log(`${packageJson.name} registry identity is ${status}`);
+    return;
+  }
   if (command === 'verify-registry') {
     const tarball = args[0];
     if (!tarball) throw new Error('verify-registry requires a tarball path');
@@ -60,7 +88,7 @@ async function main([command, ...args]) {
     console.log(`verified ${packageJson.name}@${packageJson.version} ${integrity}`);
     return;
   }
-  throw new Error('usage: release-guard.mjs <check-tag TAG|published|verify-registry TARBALL>');
+  throw new Error('usage: release-guard.mjs <check-tag TAG|check-registry-identity|published|verify-registry TARBALL>');
 }
 
 if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {

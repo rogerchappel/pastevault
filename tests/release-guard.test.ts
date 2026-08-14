@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { assertTagMatchesVersion, isExactPublishedVersion, versionFromTag } from '../scripts/release-guard.mjs';
+import { assertRegistryIdentity, assertTagMatchesVersion, isExactPublishedVersion, versionFromTag } from '../scripts/release-guard.mjs';
 
 test('accepts an exact semver release tag', () => {
   assert.equal(versionFromTag('v0.1.7'), '0.1.7');
@@ -19,6 +19,20 @@ test('recognizes only the exact published version', () => {
   assert.equal(isExactPublishedVersion('["0.1.6","0.1.7"]', '0.1.7'), true);
   assert.equal(isExactPublishedVersion('"0.1.6"\n', '0.1.7'), false);
   assert.equal(isExactPublishedVersion('', '0.1.7'), false);
+});
+
+test('accepts an unused or repository-owned registry identity', () => {
+  const packageJson = { name: 'pastevault-cli', repository: { url: 'git+https://github.com/rogerchappel/pastevault.git' } };
+  assert.equal(assertRegistryIdentity(null, packageJson), 'available');
+  assert.equal(assertRegistryIdentity({ name: 'pastevault-cli', repository: { url: 'https://github.com/rogerchappel/pastevault.git' } }, packageJson), 'owned');
+});
+
+test('refuses a registry identity owned by another repository', () => {
+  const packageJson = { name: 'pastevault-cli', repository: { url: 'git+https://github.com/rogerchappel/pastevault.git' } };
+  assert.throws(
+    () => assertRegistryIdentity({ name: 'pastevault-cli', repository: { url: 'https://github.com/arc53/pastevault.git' } }, packageJson),
+    /refusing publication.*arc53\/pastevault/,
+  );
 });
 
 test('release dry-run workflow exercises matching and mismatched tags', async () => {
@@ -39,6 +53,6 @@ test('release dry-run workflow exercises matching and mismatched tags', async ()
   });
 
   assert.equal(result.status, 0, `workflow guard commands failed:\n${result.stdout}${result.stderr}`);
-  assert.match(result.stdout, /v0\.1\.7 matches pastevault@0\.1\.7/);
+  assert.match(result.stdout, /v0\.1\.7 matches pastevault-cli@0\.1\.7/);
   assert.match(result.stderr, /tag v0\.0\.0 does not match package version 0\.1\.7/);
 });
