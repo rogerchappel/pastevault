@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -41,6 +41,14 @@ try {
     if (!help.includes('pastevault add')) {
       throw new Error(`packed CLI help did not include expected usage text via ${path}`);
     }
+  }
+
+  const installRoot = join(dir, 'install');
+  mkdirSync(installRoot);
+  execFileSync('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--prefix', installRoot, tarball]);
+  for (const command of ['pastevault', 'pv']) {
+    const help = execFileSync(join(installRoot, 'node_modules/.bin', command), ['--help'], { encoding: 'utf8' });
+    if (!help.includes('pastevault add')) throw new Error(`installed ${command} command did not run expected CLI`);
   }
 
   console.log(`package smoke passed for ${tarball}`);
