@@ -1,5 +1,5 @@
 {
-  "name": "pastevault",
+  "name": "pastevault-cli",
   "version": "0.1.7",
   "description": "Local-first TypeScript CLI for searchable clipboard and snippet history with secret redaction by default.",
   "type": "module",
@@ -38,7 +38,8 @@
     "package:smoke": "npm run build && node scripts/package-smoke.mjs",
     "release:check": "npm run check && npm test && npm run smoke && bash scripts/validate.sh && npm run package:smoke",
     "release:notes": "node /tmp/releasebox/bin/releasebox.js notes .",
-    "release:guard": "node scripts/release-guard.mjs"
+    "release:guard": "node scripts/release-guard.mjs",
+    "release:identity": "node scripts/release-guard.mjs check-registry-identity"
   },
   "keywords": [
     "clipboard",
