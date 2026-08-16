@@ -64,6 +64,9 @@ jobs:
         id: pack
         run: echo "tarball=$(npm pack --json | node -e \"let s='';process.stdin.on('data',d=>s+=d).on('end',()=>process.stdout.write(JSON.parse(s)[0].filename))\")" >> "$GITHUB_OUTPUT"
 
+      - name: Verify npm package identity
+        run: npm run release:identity
+
       - name: Check registry
         id: registry
         run: npm run release:guard -- published
