@@ -132,6 +132,9 @@ check_file "fixtures/sample-history.json"
 check_file "src/cli.ts"
 check_file "src/vault.ts"
 
+run_check "AGENTS.md project context" bash scripts/validate-agents-context.sh
+run_check "AGENTS.md context validator regressions" bash scripts/test-agents-context.sh
+
 printf '\nChecking pastevault required directories...\n'
 
 check_dir ".github"
