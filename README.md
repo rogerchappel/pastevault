@@ -8,11 +8,25 @@ It is useful for prompt fragments, PR text, shell commands, review notes, deploy
 
 ## Install
 
+`pastevault-cli` is not currently available from the npm registry. Install the
+current source as an exact local tarball instead:
+
 ```bash
-npm install -g pastevault-cli
+git clone --depth 1 https://github.com/rogerchappel/pastevault.git
+cd pastevault
+npm ci
+npm run build
+tarball="$(npm pack --silent)"
+npm install --global "$PWD/$tarball"
+pastevault --help
+pv --help
 ```
 
-For local development:
+This installs both the `pastevault` and `pv` commands from the same packed
+artifact that the release checks validate. To remove it, run
+`npm uninstall --global pastevault-cli`.
+
+For local development without a global install:
 
 ```bash
 npm install
