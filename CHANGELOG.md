@@ -7,6 +7,7 @@ All notable changes to pastevault will be documented here.
 ### Changed
 
 - Added a named `package:smoke` script and wired CI/release checks to verify npm pack contents.
+- Replaced the unavailable npm registry install command with a tested source-to-tarball global install flow.
 
 ## 0.1.0 - 2026-05-02
 
