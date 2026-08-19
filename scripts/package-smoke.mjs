@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -16,6 +16,19 @@ const required = [
   'package/CHANGELOG.md',
   'package/CONTRIBUTING.md'
 ];
+
+const documentedInstallCommands = [
+  'git clone --depth 1 https://github.com/rogerchappel/pastevault.git',
+  'npm ci',
+  'npm run build',
+  'tarball="$(npm pack --silent)"',
+  'npm install --global "$PWD/$tarball"'
+];
+
+const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
+for (const command of documentedInstallCommands) {
+  if (!readme.includes(command)) throw new Error(`README install flow is missing: ${command}`);
+}
 
 const dir = mkdtempSync(join(tmpdir(), 'pastevault-pack-'));
 
