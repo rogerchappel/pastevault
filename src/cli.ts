@@ -156,7 +156,34 @@ function parse(argv: string[]) {
     else if (arg.startsWith('-')) throw new Error(`unknown option: ${arg}`);
   }
   if (options.limit !== undefined && (!Number.isInteger(options.limit) || options.limit < 1)) throw new Error('--limit must be a positive integer');
+  validateCommandArgs(command, args);
   return { command, args, options };
+}
+
+function validateCommandArgs(command: string | undefined, args: string[]): void {
+  if (!command || ['help', '--help', '-h'].includes(command)) return;
+  const values = positional(args);
+  const singleOperandUsage: Record<string, string> = {
+    import: 'usage: pastevault import <file.json> [options]',
+    show: 'usage: pastevault show <id> [options]',
+    pin: 'usage: pastevault pin <id> [options]',
+    unpin: 'usage: pastevault unpin <id> [options]',
+    rm: 'usage: pastevault rm <id> [options]',
+    remove: 'usage: pastevault remove <id> [options]',
+    'capture-file': 'usage: pastevault capture-file <file> [options]'
+  };
+  const usage = singleOperandUsage[command];
+  if (usage && values.length !== 1) throw new Error(usage);
+
+  if (['list', 'palette', 'secrets', 'stats', 'export'].includes(command) && values.length !== 0) {
+    throw new Error(`usage: pastevault ${command} [options]`);
+  }
+  if (command === 'add' && !args.includes('--stdin') && values.length === 0) {
+    throw new Error('usage: pastevault add <text> [options]');
+  }
+  if (['search', 'redact'].includes(command) && values.length === 0) {
+    throw new Error(`usage: pastevault ${command} <text> [options]`);
+  }
 }
 
 function optionValue(argv: string[], index: number, option: string): string {
@@ -198,7 +225,7 @@ async function readStdin(): Promise<string> {
 }
 
 function redactCommand(args: string[]): number {
-  const text = args.join(' ');
+  const text = positional(args).join(' ');
   write(`${redactText(text, detectSecrets(text))}\n`);
   return 0;
 }
