@@ -110,6 +110,49 @@ test('cli keeps documented option invocations compatible', async () => {
   }
 });
 
+test('cli enforces single-operand command usage before reading or mutating', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'pastevault-cli-arity-'));
+  try {
+    const store = join(dir, 'vault.json');
+    const added = await capture(() => main(['add', 'unchanged', '--store', store, '--json']));
+    const id = JSON.parse(added.out).item.id;
+    const before = await readFile(store, 'utf8');
+
+    for (const command of ['show', 'pin', 'unpin', 'rm']) {
+      const result = await capture(() => main([command, id, 'extra', '--store', store]));
+      assert.equal(result.code, 1, command);
+      assert.match(result.err, new RegExp(`usage: pastevault ${command === 'rm' ? 'rm' : command} <id>`));
+      assert.equal(await readFile(store, 'utf8'), before, command);
+    }
+
+    const source = join(dir, 'snippet.txt');
+    await writeFile(source, 'captured');
+    const captureFile = await capture(() => main(['capture-file', source, 'extra', '--store', store]));
+    assert.equal(captureFile.code, 1);
+    assert.match(captureFile.err, /usage: pastevault capture-file <file>/);
+    assert.equal(await readFile(store, 'utf8'), before);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli consumes recognized options without appending them to multi-word text', async () => {
+  const redacted = await capture(() => main(['redact', 'TOKEN=super-secret-value-12345', '--json']));
+  assert.equal(redacted.code, 0);
+  assert.equal(redacted.out, '[redacted:generic-secret-assignment]\n');
+
+  const dir = await mkdtemp(join(tmpdir(), 'pastevault-cli-text-'));
+  try {
+    const store = join(dir, 'vault.json');
+    const added = await capture(() => main(['add', 'multi', 'word', '--store', store, '--json']));
+    assert.equal(JSON.parse(added.out).item.text, 'multi word');
+    const searched = await capture(() => main(['search', 'multi', 'word', '--store', store, '--json']));
+    assert.equal(JSON.parse(searched.out).items.length, 1);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('cli rejects ambiguous ids without mutating the store', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'pastevault-cli-prefix-'));
   try {
