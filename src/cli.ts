@@ -32,6 +32,7 @@ Usage:
   pastevault palette [--limit n] [--reveal]
   pastevault secrets [--json]
   pastevault redact <text>
+  pastevault capture-file <file> [--tag name] [--store path]
   pastevault stats [--json]
   pastevault export [--json] [--reveal]
 
