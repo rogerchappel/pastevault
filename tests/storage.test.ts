@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { defaultStorePath, emptyVault, loadVault, saveVault } from '../src/storage.ts';
+import { defaultStorePath, emptyVault, loadVault, mutateVault, saveVault } from '../src/storage.ts';
 
 test('uses XDG data home when supplied', () => {
   assert.equal(defaultStorePath({ XDG_DATA_HOME: '/tmp/data' }), '/tmp/data/pastevault/vault.json');
@@ -18,6 +18,18 @@ test('round-trips vault json with private file path', async () => {
     const loaded = await loadVault(path);
     assert.equal(loaded.version, 1);
     assert.deepEqual(loaded.items, []);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('mutation failures remove their lock without saving', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'pastevault-lock-test-'));
+  try {
+    const path = join(dir, 'vault.json');
+    await assert.rejects(mutateVault(path, () => { throw new Error('stop'); }), /stop/);
+    await assert.rejects(readFile(`${path}.lock`, 'utf8'), { code: 'ENOENT' });
+    await assert.rejects(readFile(path, 'utf8'), { code: 'ENOENT' });
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
