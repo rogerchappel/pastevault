@@ -11,6 +11,23 @@ import { PasteVault } from '../src/vault.ts';
 
 const execFileAsync = promisify(execFile);
 
+test('concurrent successful adds preserve every unique snippet', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'pastevault-cli-concurrent-'));
+  try {
+    const store = join(dir, 'vault.json');
+    const writers = Array.from({ length: 20 }, (_, index) =>
+      execFileAsync(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'add', `snippet-${index}`, '--store', store]));
+    const results = await Promise.all(writers);
+    assert.ok(results.every((result) => result.stderr === ''));
+    const vault = JSON.parse(await readFile(store, 'utf8'));
+    assert.equal(vault.items.length, 20);
+    assert.equal(new Set(vault.items.map((item: { text: string }) => item.text)).size, 20);
+    await assert.rejects(readFile(`${store}.lock`, 'utf8'), { code: 'ENOENT' });
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 async function capture(run: () => Promise<number>) {
   let out = '';
   let err = '';
