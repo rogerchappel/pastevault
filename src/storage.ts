@@ -1,4 +1,4 @@
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, open, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { homedir } from 'node:os';
 import type { PasteItem, SecretFinding, VaultFile } from './types.js';
@@ -30,8 +30,38 @@ export async function saveVault(path: string, vault: VaultFile): Promise<void> {
   await mkdir(dirname(path), { recursive: true });
   vault.updatedAt = new Date().toISOString();
   const tmp = `${path}.${process.pid}.${Date.now()}.tmp`;
-  await writeFile(tmp, `${JSON.stringify(vault, null, 2)}\n`, { mode: 0o600 });
-  await rename(tmp, path);
+  try {
+    await writeFile(tmp, `${JSON.stringify(vault, null, 2)}\n`, { mode: 0o600 });
+    await rename(tmp, path);
+  } finally {
+    await rm(tmp, { force: true });
+  }
+}
+
+export async function mutateVault<T>(path: string, mutate: (vault: VaultFile) => T | Promise<T>): Promise<T> {
+  await mkdir(dirname(path), { recursive: true });
+  const lockPath = `${path}.lock`;
+  const deadline = Date.now() + 10_000;
+  let lock;
+  while (!lock) {
+    try {
+      lock = await open(lockPath, 'wx', 0o600);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST' || Date.now() >= deadline) {
+        throw new Error(`could not acquire vault lock: ${(error as Error).message}`);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+  }
+  try {
+    const vault = await loadVault(path);
+    const result = await mutate(vault);
+    await saveVault(path, vault);
+    return result;
+  } finally {
+    await lock.close();
+    await rm(lockPath, { force: true });
+  }
 }
 
 export function validateVault(value: unknown): VaultFile {

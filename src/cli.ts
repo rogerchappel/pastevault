@@ -3,7 +3,7 @@ import { realpathSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { stdin as input, stdout, stderr } from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { defaultStorePath, loadVault, saveVault } from './storage.js';
+import { defaultStorePath, loadVault, mutateVault } from './storage.js';
 import { PasteVault, safeItem } from './vault.js';
 import { readImportFile } from './fixtures.js';
 import { renderJson, renderList, renderPalette, renderShow } from './format.js';
@@ -50,34 +50,33 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     }
     if (command === 'redact') return redactCommand(args);
 
-    const vaultFile = await loadVault(options.store);
-    const vault = new PasteVault(vaultFile);
+    const readVault = async () => new PasteVault(await loadVault(options.store));
 
     switch (command) {
       case 'add': {
         const text = args.includes('--stdin') ? await readStdin() : positional(args).join(' ');
-        const item = vault.add({ text, tags: options.tags, pinned: args.includes('--pin'), source: args.includes('--stdin') ? 'stdin' : 'manual' });
-        await saveVault(options.store, vault.data);
+        const item = await mutateVault(options.store, (data) => new PasteVault(data).add({ text, tags: options.tags, pinned: args.includes('--pin'), source: args.includes('--stdin') ? 'stdin' : 'manual' }));
         writeItem(item, options);
         return 0;
       }
       case 'import': {
         const [file] = exactPositionals(args, 1, 'usage: pastevault import <file.json> [options]');
         const inputs = await readImportFile(file);
-        const items = vault.importItems(inputs.map((item) => ({
+        const items = await mutateVault(options.store, (data) => new PasteVault(data).importItems(inputs.map((item) => ({
           ...item,
           tags: [...(item.tags ?? []), ...options.tags]
-        })));
-        await saveVault(options.store, vault.data);
+        }))));
         write(options.json ? renderJson({ imported: items.length, items: items.map((item) => safeItem(item, options.reveal)) }) : `Imported ${items.length} snippets.\n`);
         return 0;
       }
       case 'list': {
+        const vault = await readVault();
         const items = vault.list({ limit: options.limit, includeSecrets: options.reveal, pinned: options.pinned, tags: options.tags });
         write(options.json ? renderJson({ items: items.map((item) => safeItem(item, options.reveal)) }) : renderList(items, options.reveal));
         return 0;
       }
       case 'search': {
+        const vault = await readVault();
         const query = positional(args).join(' ');
         if (!query) throw new Error('search requires a query');
         const items = vault.list({ query, limit: options.limit, includeSecrets: options.reveal, tags: options.tags });
@@ -85,40 +84,45 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
         return 0;
       }
       case 'show': {
+        const vault = await readVault();
         const item = vault.get(requiredArg(args, 'show requires an id'));
         write(options.json ? renderJson({ item: safeItem(item, options.reveal) }) : renderShow(item, options.reveal));
         return 0;
       }
       case 'pin':
       case 'unpin': {
-        const item = vault.pin(requiredArg(args, `${command} requires an id`), command === 'pin');
-        await saveVault(options.store, vault.data);
+        const id = requiredArg(args, `${command} requires an id`);
+        const item = await mutateVault(options.store, (data) => new PasteVault(data).pin(id, command === 'pin'));
         writeItem(item, options);
         return 0;
       }
       case 'rm':
       case 'remove': {
-        const item = vault.remove(requiredArg(args, 'remove requires an id'));
-        await saveVault(options.store, vault.data);
+        const id = requiredArg(args, 'remove requires an id');
+        const item = await mutateVault(options.store, (data) => new PasteVault(data).remove(id));
         write(options.json ? renderJson({ removed: safeItem(item, options.reveal) }) : `Removed ${item.id}.\n`);
         return 0;
       }
       case 'palette': {
+        const vault = await readVault();
         const items = vault.list({ limit: options.limit ?? 12, tags: options.tags });
         write(options.json ? renderJson({ items: items.map((item) => safeItem(item, options.reveal)) }) : renderPalette(items, options.reveal));
         return 0;
       }
       case 'secrets': {
+        const vault = await readVault();
         const items = vault.data.items.filter((item) => item.secrets.length > 0).map((item) => ({ id: item.id, findings: item.secrets, redacted: redactText(item.text, item.secrets) }));
         write(options.json ? renderJson({ items }) : `${items.map((item) => `${item.id} ${item.findings.map((finding) => finding.kind).join(', ')} ${item.redacted.split('\n')[0]}`).join('\n')}\n`);
         return 0;
       }
       case 'stats': {
+        const vault = await readVault();
         const stats = vault.stats();
         write(options.json ? renderJson(stats) : `items: ${stats.items}\npinned: ${stats.pinned}\nwith secrets: ${stats.withSecrets}\ntags: ${stats.tags.join(', ') || '-'}\n`);
         return 0;
       }
       case 'export': {
+        const vault = await readVault();
         const items = vault.data.items.map((item) => safeItem(item, options.reveal));
         write(renderJson({ version: vault.data.version, exportedAt: new Date().toISOString(), items }));
         return 0;
@@ -127,8 +131,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
         const file = requiredArg(args, 'capture-file requires a text file');
         const text = await readFile(file, 'utf8');
         const inputItem: AddInput = { text, source: 'clipboard', tags: options.tags };
-        const item = vault.add(inputItem);
-        await saveVault(options.store, vault.data);
+        const item = await mutateVault(options.store, (data) => new PasteVault(data).add(inputItem));
         writeItem(item, options);
         return 0;
       }
