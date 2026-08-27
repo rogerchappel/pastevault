@@ -101,6 +101,7 @@ is added to every imported item while preserving tags supplied by the file.
 - No password-manager claims.
 - The default store is `$XDG_DATA_HOME/pastevault/vault.json` or `~/.local/share/pastevault/vault.json`.
 - Writes are atomic and create the vault file with user-only permissions where the platform honors POSIX modes.
+- Mutating commands serialize through a short-lived adjacent lock file, so concurrent successful commands preserve every update. A command fails after 10 seconds if another writer does not release the lock; handled success and failure remove lock and temporary files.
 
 ## Development
 
