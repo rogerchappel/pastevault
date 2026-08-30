@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, utimes, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { tmpdir } from 'node:os';
+import { hostname, tmpdir } from 'node:os';
 import { defaultStorePath, emptyVault, loadVault, mutateVault, saveVault } from '../src/storage.ts';
 
 test('uses XDG data home when supplied', () => {
@@ -30,6 +30,32 @@ test('mutation failures remove their lock without saving', async () => {
     await assert.rejects(mutateVault(path, () => { throw new Error('stop'); }), /stop/);
     await assert.rejects(readFile(`${path}.lock`, 'utf8'), { code: 'ENOENT' });
     await assert.rejects(readFile(path, 'utf8'), { code: 'ENOENT' });
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('recovers an old lock whose same-host writer is no longer alive', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'pastevault-stale-lock-test-'));
+  try {
+    const path = join(dir, 'vault.json');
+    const lockPath = `${path}.lock`;
+    await writeFile(lockPath, `${JSON.stringify({
+      pid: 2_147_483_647,
+      hostname: hostname(),
+      createdAt: '2020-01-01T00:00:00.000Z',
+      token: 'terminated-writer',
+    })}\n`);
+    await utimes(lockPath, new Date(0), new Date(0));
+
+    const result = await mutateVault(path, (vault) => {
+      vault.items = [];
+      return 'recovered';
+    });
+
+    assert.equal(result, 'recovered');
+    assert.equal((await loadVault(path)).version, 1);
+    await assert.rejects(readFile(lockPath, 'utf8'), { code: 'ENOENT' });
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
