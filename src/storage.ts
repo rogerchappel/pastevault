@@ -87,7 +87,7 @@ async function removeStaleLock(lockPath: string): Promise<boolean> {
     const [raw, details] = await Promise.all([readFile(lockPath, 'utf8'), stat(lockPath)]);
     if (Date.now() - details.mtimeMs < STALE_LOCK_AGE_MS) return false;
     const owner = parseLockOwner(raw);
-    if (owner && (owner.hostname !== hostname() || isProcessAlive(owner.pid))) return false;
+    if (!owner || owner.hostname !== hostname() || isProcessAlive(owner.pid)) return false;
     // Re-read the contents before removal so a successor's lock is not removed.
     if (await readFile(lockPath, 'utf8') !== raw) return false;
     await rm(lockPath);
@@ -113,7 +113,7 @@ function parseLockOwner(raw: string): LockOwner | undefined {
     if (Number.isInteger(value.pid) && (value.pid ?? 0) > 0 && typeof value.hostname === 'string'
       && typeof value.createdAt === 'string' && typeof value.token === 'string') return value as LockOwner;
   } catch {
-    // Legacy and interrupted lock files are recoverable only after the age threshold.
+    // Unknown ownership is not safe to recover automatically.
   }
   return undefined;
 }
