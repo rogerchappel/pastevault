@@ -167,6 +167,11 @@ function parse(argv: string[]) {
 function validateCommandArgs(command: string | undefined, args: string[]): void {
   if (!command || ['help', '--help', '-h'].includes(command)) return;
   const values = positional(args);
+  if (command !== 'add' && args.includes('--pin')) throw new Error('--pin is only supported by add');
+  if (command !== 'add' && args.includes('--stdin')) throw new Error('--stdin is only supported by add');
+  if (command === 'add' && args.includes('--stdin') && values.length > 0) {
+    throw new Error('add accepts either <text> or --stdin, not both');
+  }
   const singleOperandUsage: Record<string, string> = {
     import: 'usage: pastevault import <file.json> [options]',
     show: 'usage: pastevault show <id> [options]',
