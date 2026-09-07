@@ -11,6 +11,16 @@ import { PasteVault } from '../src/vault.ts';
 
 const execFileAsync = promisify(execFile);
 
+function execCliWithInput(args: string[], stdin: string): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    const child = execFile(process.execPath, ['--import', 'tsx', 'src/cli.ts', ...args], (error, stdout, stderr) => {
+      if (error) reject(error);
+      else resolve({ stdout, stderr });
+    });
+    child.stdin?.end(stdin);
+  });
+}
+
 test('concurrent successful adds preserve every unique snippet', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'pastevault-cli-concurrent-'));
   try {
@@ -119,9 +129,34 @@ test('cli keeps documented option invocations compatible', async () => {
     const store = join(dir, 'vault.json');
     assert.equal((await capture(() => main(['add', 'first', '--tag', 'docs', '--pin', '--store', store]))).code, 0);
     assert.equal((await capture(() => main(['add', 'second', '--tag', 'ci', '--store', store]))).code, 0);
+    const stdinAdd = await execCliWithInput(['add', '--stdin', '--store', store, '--json'], 'from stdin');
+    assert.equal(JSON.parse(stdinAdd.stdout).item.text, 'from stdin');
     const result = await capture(() => main(['list', '--limit', '1', '--tag', 'docs', '--pinned', '--json', '--store', store]));
     assert.equal(result.code, 0);
     assert.equal(JSON.parse(result.out).items.length, 1);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli rejects command-specific switches before reading or mutating', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'pastevault-cli-option-scope-'));
+  try {
+    const store = join(dir, 'vault.json');
+    const added = await capture(() => main(['add', 'unchanged', '--store', store, '--json']));
+    assert.equal(added.code, 0);
+    const before = await readFile(store, 'utf8');
+
+    for (const { argv, message } of [
+      { argv: ['list', '--pin', '--store', store], message: '--pin is only supported by add' },
+      { argv: ['list', '--stdin', '--store', store], message: '--stdin is only supported by add' },
+      { argv: ['add', 'ignored', '--stdin', '--store', store], message: 'add accepts either <text> or --stdin, not both' }
+    ]) {
+      const result = await capture(() => main(argv));
+      assert.equal(result.code, 1, argv.join(' '));
+      assert.equal(result.err, `pastevault: ${message}\n`);
+      assert.equal(await readFile(store, 'utf8'), before, argv.join(' '));
+    }
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
