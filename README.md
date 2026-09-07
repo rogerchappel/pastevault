@@ -73,7 +73,7 @@ Detected patterns include GitHub tokens, Slack tokens, AWS access key IDs, priva
 
 | Command | Purpose |
 | --- | --- |
-| `add <text>` / `add --stdin` | Add a snippet from args or standard input. |
+| `add <text>` / `add --stdin` | Add a snippet from args or standard input; the two input forms are mutually exclusive. |
 | `import <file.json>` | Import fixture-friendly arrays or `{ "items": [...] }`. |
 | `list` | Show recent snippets; pinned items float first. |
 | `search <query>` | Search text, notes, and tags. |
@@ -87,7 +87,7 @@ Detected patterns include GitHub tokens, Slack tokens, AWS access key IDs, priva
 | `redact <text>` | Redact text without storing it. |
 | `capture-file <path>` | Add a text file as a clipboard-like capture. |
 
-Global options include `--store <path>`, `--json`, `--limit <n>`, `--tag <name>`, `--pinned`, and `--reveal`.
+Shared options include `--store <path>`, `--json`, `--limit <n>`, `--tag <name>`, and `--reveal` where shown in command help. `--pin` and `--stdin` apply only to `add`; `--pinned` filters `list`.
 Options that take a value reject missing values, and unknown options are errors. Commands that accept an
 `<id>` allow an exact ID or a uniquely identifying prefix; ambiguous prefixes are rejected without changes.
 Import accepts global options before or after its single `<file.json>` argument. An import-level `--tag`

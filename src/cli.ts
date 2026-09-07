@@ -36,6 +36,8 @@ Usage:
   pastevault stats [--json]
   pastevault export [--json] [--reveal]
 
+Add input forms are mutually exclusive. --pin and --stdin are supported only by add.
+
 Privacy defaults:
   Text is stored only in a local JSON file. Secret-looking content is redacted in output
   unless --reveal is supplied for the current command.
