@@ -1,12 +1,14 @@
-# Release candidate readiness
+# Historical release-candidate readiness snapshot
+
+> **Historical record only — not a current readiness signal.** This snapshot records checks run on 2026-05-05 against branch `rc/release-readiness` at base `main`. Re-run the checks against the exact current commit and review its CI results before making any release-readiness decision.
 
 Generated: 2026-05-05T21:32:04Z
 Branch: `rc/release-readiness`
 Base: `main`
 
-## Verification
+## Verification (historical; run on 2026-05-05)
 
-Status: PASS
+Status at the time: PASS
 
 Note: this follow-up PR keeps an open release-readiness review after the earlier `release-candidate/readiness` PR was merged.
 
